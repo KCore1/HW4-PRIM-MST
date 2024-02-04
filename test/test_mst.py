@@ -25,6 +25,18 @@ def check_mst(adj_mat: np.ndarray,
     always connected? What else can you think of?
 
     """
+    # Check for no self-cycles
+    assert np.all(np.diag(mst) == 0), 'Proposed MST has self-cycles'
+
+    # Check that the MST does not have negative weights
+    assert np.all(mst >= 0), 'Proposed MST has negative weights'
+
+    # Check that the MST has the appropriate number of edges (= number of vertices - 1)
+    assert np.sum(mst > 0) // 2 == mst.shape[0] - 1, 'Proposed MST has incorrect number of edges'
+
+    # Check that the vertex in MST is connected IF the vertex is connected in the adjacency matrix
+    for i in range(mst.shape[0]):
+        assert np.sum(mst[i] > 0) > 0 if np.sum(adj_mat[i] > 0) > 0 else True, 'Proposed MST is not connected'
 
     def approx_equal(a, b):
         return abs(a - b) < allowed_error
@@ -71,4 +83,16 @@ def test_mst_student():
     TODO: Write at least one unit test for MST construction.
     
     """
-    pass
+    # Verify the MST is symmetric on small graph
+    file_path = './data/small.csv'
+    g = Graph(file_path)
+    g.construct_mst()
+    assert np.all(g.mst == g.mst.T), 'Proposed MST is not symmetric'
+
+    # Verify the MST is symmetric on single cell data
+    file_path = './data/slingshot_example.txt'
+    coords = np.loadtxt(file_path) # load coordinates of single cells in low-dimensional subspace
+    dist_mat = pairwise_distances(coords) # compute pairwise distances to form graph
+    g = Graph(dist_mat)
+    g.construct_mst()
+    assert np.allclose(g.mst, g.mst.T, 1e-8), 'Proposed MST is not symmetric'
