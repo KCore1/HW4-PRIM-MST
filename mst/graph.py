@@ -41,4 +41,27 @@ class Graph:
         `heapify`, `heappop`, and `heappush` functions.
 
         """
-        self.mst = None
+        num_vertices = self.adj_mat.shape[0]
+        
+        self.mst = np.zeros_like(self.adj_mat)
+        
+        in_mst = [False] * num_vertices
+        
+        # Priority queue: (weight, (u, v)) where u and v are vertex indices in the adjacency matrix
+        # heapq will take the first element of the tuple as the priority
+        edges = [(0, (0, 0))]  # Start with the first vertex
+        
+        while not all(in_mst):
+            # Select the edge with minimum weight
+            weight, (u, v) = heapq.heappop(edges)
+            
+            if not in_mst[v]:
+                in_mst[v] = True
+                
+                # Update the MST
+                self.mst[u, v] = self.mst[v, u] = weight
+                
+                # Add new edges to the priority queue
+                for next_vertex in range(num_vertices):
+                    if self.adj_mat[v, next_vertex] > 0 and not in_mst[next_vertex]:
+                        heapq.heappush(edges, (self.adj_mat[v, next_vertex], (v, next_vertex)))
